@@ -1,0 +1,33 @@
+name: passin-server
+
+services:
+
+  cloudflare-tunnel:
+    image: cloudflare/cloudflared
+    container_name: cloudflare-tunnel
+    restart: unless-stopped
+    command: tunnel run
+    network_mode: "host"
+    environment:
+      - "TUNNEL_TOKEN=eyJhIjoiMGJlNmMzOTI0NTNjODVmNjU4ZDAyNDBjYjQ5MGQ5NjQiLCJ0IjoiNmM3YTY5ZjMtMTE3NC00MWEyLWE3MDQtYzBkZTg3MjFmYjk3IiwicyI6Ik1tVTJObVF6WVRRdE9Ua3lOUzAwTTJFNUxXSmtNMk10TkdZd09UTXdaV0pqTnpBMyJ9"
+    labels:
+      # enbale watchtower updates
+      - "com.centurylinklabs.watchtower.enable=true"
+
+ 
+
+  pg_passin2:
+    image: bitnami/postgresql:13.16.0
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_USER=passin
+      - POSTGRES_PASSWORD=passin
+      - POSTGRES_DB=passin
+      - TZ=America/Sao_Paulo
+    volumes:
+     - pg_server_passin2:/bitnami/postgresql
+
+volumes:
+  pg_server_passin:
+  pg_server_passin2:
