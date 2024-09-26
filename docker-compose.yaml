@@ -1,21 +1,5 @@
-name: passin-server
-
+version: '3.8'
 services:
-
-  cloudflare-tunnel:
-    image: cloudflare/cloudflared
-    container_name: cloudflare-tunnel
-    restart: unless-stopped
-    command: tunnel run
-    network_mode: "host"
-    environment:
-      - "TUNNEL_TOKEN=eyJhIjoiMGJlNmMzOTI0NTNjODVmNjU4ZDAyNDBjYjQ5MGQ5NjQiLCJ0IjoiNmM3YTY5ZjMtMTE3NC00MWEyLWE3MDQtYzBkZTg3MjFmYjk3IiwicyI6Ik1tVTJObVF6WVRRdE9Ua3lOUzAwTTJFNUxXSmtNMk10TkdZd09UTXdaV0pqTnpBMyJ9"
-    labels:
-      # enbale watchtower updates
-      - "com.centurylinklabs.watchtower.enable=true"
-
- 
-
   pg_passin2:
     image: bitnami/postgresql:13.16.0
     ports:
@@ -26,8 +10,28 @@ services:
       - POSTGRES_DB=passin
       - TZ=America/Sao_Paulo
     volumes:
-     - pg_server_passin2:/bitnami/postgresql
+      - pg_server_passin3:/bitnami/postgresql
+
+  app:
+    build: .
+    ports:
+      - "5273:5273"
+    environment:
+      DATABASE_URL: postgresql://passin:passin@pg_passin2:5432/passin
+    depends_on:
+      - pg_passin2
+    volumes:
+      - server_api:/app
+    env_file:
+      - .env
+    command: >
+      sh -c "
+      /wait-for-it.sh pg_passin2:5432 -- npm run db:generate &&
+      /wait-for-it.sh pg_passin2:5432 -- npm run db:migrate &&
+      /wait-for-it.sh pg_passin2:5432 -- npm run seed &&
+      npm run start
+      "
 
 volumes:
-  pg_server_passin:
-  pg_server_passin2:
+  pg_server_passin3:
+  server_api:
