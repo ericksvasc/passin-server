@@ -1,22 +1,20 @@
 import { and, eq } from 'drizzle-orm'
 import { db } from '..'
 import { checkIns, eventManagers, events } from '../schema'
-import {
-  BadRequest,
-  UnauthorizedError,
-} from '../../http/routes/_errors/bad.request'
+import { UnauthorizedError } from '../../http/routes/_errors/bad.request'
 
-interface CreateCeckin {
+interface DeleteCheckin {
   attendeeId: number
+
   slug: string
   managerId: string
 }
 
-export async function createCheckIn({
+export async function deleteCheckinAttendee({
   attendeeId,
   slug,
   managerId,
-}: CreateCeckin) {
+}: DeleteCheckin) {
   const event = await db
     .select({
       eventId: events.id,
@@ -32,25 +30,10 @@ export async function createCheckIn({
 
   const [{ eventId }] = event
 
-  const attendeeCheckin = await db
-    .select()
-    .from(checkIns)
-    .where(eq(checkIns.attendeeId, attendeeId))
-    .limit(1)
-
-  if (attendeeCheckin.length >= 1) {
-    throw new BadRequest('Ateendee Already checked in!')
-  }
-
-  const createCheckInAteendee = await db
-    .insert(checkIns)
-    .values({
-      attendeeId,
-      eventId,
-    })
+  await db
+    .delete(checkIns)
+    .where(
+      and(eq(checkIns.eventId, eventId), eq(checkIns.attendeeId, attendeeId))
+    )
     .returning()
-
-  const checkIn = createCheckInAteendee[0]
-
-  return checkIn
 }

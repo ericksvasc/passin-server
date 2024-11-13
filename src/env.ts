@@ -1,7 +1,11 @@
 import z from 'zod'
 
 const envSchema = z.object({
-  DATABASE_URL: z.string().url(),
+  DATABASE_URL: z.string().url().min(1),
+  API_BASE_URL: z.string().url().min(1),
+  AUTH_REDIRECT_URL: z.string().url().min(1),
+  JWT_SECRET_KEY: z.string(),
+  API_KEY_RESEND: z.string(),
 })
 
 export const env = envSchema.parse(process.env)

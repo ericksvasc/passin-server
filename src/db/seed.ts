@@ -1,54 +1,24 @@
-// import { faker } from '@faker-js/faker'
-// import { db } from '.'
-// import { attendees, events } from './schema'
-// import dayjs from 'dayjs'
-
-// async function seed() {
-//   db.delete(events)
-
-//   const eventId = 'hr0e68xev2zkbuh71mai0szz'
-
-//   await db
-//     .insert(events)
-//     .values({
-//       id: eventId,
-//       title: 'Unite Summit',
-//       details: 'Um evento para apaixonados por códigos',
-//       slug: 'unite-sumiit',
-//       maximumAttendees: 100,
-//     })
-//     .returning()
-
-//   const attendeesToInsert = []
-
-//   const attendeess = Array.from({ length: 205 }).map(() => {
-//     return {
-//       id: faker.number.int({ min: 10000, max: 20000 }),
-//       name: faker.person.fullName(),
-//       email: faker.internet.email(),
-//       createAt: faker.date.recent({ days: 30 }).toISOString(),
-//       checkedInAt: faker.date.recent({ days: 7 }).toISOString(),
-//     }
-//   })
-
-//   await Promise.all(
-//     attendeess.map(data => {
-//       return db.insert(attendees).values({ data })
-//     })
-//   )
-// }
-// seed().then(() => {
-//   console.log('database seeded!')
-// })
-
-///
-
-import { client, db } from '.' // Importa a instância de conexão com o banco via Drizzle
-import { attendees, checkIns, events } from './schema' // Importa suas tabelas definidas
+import { client, db } from '.'
+import {
+  attendees,
+  authLinks,
+  checkIns,
+  eventManagers,
+  events,
+  managers,
+} from './schema'
 import { faker } from '@faker-js/faker'
 import dayjs from 'dayjs'
 
-// Definir o tipo de attendeeData
+const deleteTable = async () => {
+  await db.delete(checkIns)
+  await db.delete(attendees)
+  await db.delete(eventManagers)
+  await db.delete(managers)
+  await db.delete(events)
+  await db.delete(authLinks)
+}
+
 interface AttendeeData {
   id: number
   name: string
@@ -57,69 +27,200 @@ interface AttendeeData {
   createdAt: Date
 }
 
-// Definir o tipo de checkInData
 interface CheckInData {
   createdAt: Date
 }
 
-// Tipar a variável attendeesToInsert corretamente
-const attendeesToInsert: {
-  attendeeData: AttendeeData
-  checkInData?: CheckInData
-}[] = []
+// Array of event IDs and their details with specific attendee counts
+const eventsToCreate = [
+  {
+    id: 'hr0e68xev2zkbuh71mai0szz',
+    title: 'Unite Summit',
+    details: 'Um evento para apaixonados por códigos',
+    slug: 'unite-summit',
+    maximumAttendees: 250,
+    targetAttendees: 180,
+    managerId: 1, // Added managerId reference
+  },
+  {
+    id: 'j8u7tfdgak2h6fhnqjh9pgfo',
+    title: 'Tech Conference 2024',
+    details: 'Conferência anual de tecnologia e inovação',
+    slug: 'tech-conference-2024',
+    maximumAttendees: 200,
+    targetAttendees: 198,
+    managerId: 1,
+  },
+  {
+    id: 'rddl969wbsvfsyhxtv7jfn34',
+    title: 'Developer Day',
+    details: 'Um dia inteiro dedicado ao desenvolvimento de software',
+    slug: 'developer-day',
+    maximumAttendees: 250,
+    targetAttendees: 210,
+    managerId: 1,
+  },
+  {
+    id: 'b0j0959p3hwsmvq1kazusdhq',
+    title: 'Code Workshop',
+    details: 'Workshop prático de programação',
+    slug: 'code-workshop',
+    maximumAttendees: 50,
+    targetAttendees: 50,
+    managerId: 1,
+  },
+  {
+    id: 'e78gejgtarz1ob2n09ok688j',
+    title: 'Innovation Summit',
+    details: 'Summit focado em inovação tecnológica',
+    slug: 'innovation-summit',
+    maximumAttendees: 25,
+    targetAttendees: 20,
+    managerId: 1,
+  },
+  // New events for the second manager
+  {
+    id: 'k9p2m5nx8wq7vt4y1zl3',
+    title: 'Data Science Conference',
+    details: 'Conferência especializada em Data Science e IA',
+    slug: 'data-science-conference',
+    maximumAttendees: 250,
+    targetAttendees: 200,
+    managerId: 2,
+  },
+  {
+    id: 'h4j7r9d2m5n8q1w3x6',
+    title: 'Cloud Computing Workshop',
+    details: 'Workshop sobre arquitetura e deploy em nuvem',
+    slug: 'cloud-computing-workshop',
+    maximumAttendees: 175,
+    targetAttendees: 150,
+    managerId: 2,
+  },
+  {
+    id: 'b2k5n8p1m4w7x3z6y9',
+    title: 'Mobile Dev Meetup',
+    details: 'Encontro para desenvolvedores mobile',
+    slug: 'mobile-dev-meetup',
+    maximumAttendees: 40,
+    targetAttendees: 35,
+    managerId: 2,
+  },
+]
 
-const eventId = 'hr0e68xev2zkbuh71mai0szz'
+// Function to generate attendees for an event
+function generateAttendeesForEvent(
+  eventId: string,
+  startId: number,
+  count: number
+) {
+  const attendeesToInsert: {
+    attendeeData: AttendeeData
+    checkInData?: CheckInData
+  }[] = []
 
-for (let i = 0; i < 120; i++) {
-  const attendeeId = 10000 + i
-  const attendeeData: AttendeeData = {
-    id: attendeeId,
-    name: faker.person.fullName(),
-    email: faker.internet.email(),
-    eventId,
-    createdAt: faker.date.recent({
-      days: 30,
-      refDate: dayjs().subtract(8, 'days').toDate(),
-    }),
+  for (let i = 0; i < count; i++) {
+    const attendeeId = startId + i
+    const attendeeData: AttendeeData = {
+      id: attendeeId,
+      name: faker.person.fullName(),
+      email: faker.internet.email(),
+      eventId,
+      createdAt: faker.date.recent({
+        days: 30,
+        refDate: dayjs().subtract(8, 'days').toDate(),
+      }),
+    }
+
+    const checkInData: CheckInData | undefined = faker.helpers.arrayElement([
+      undefined,
+      {
+        createdAt: faker.date.recent({ days: 7 }),
+      },
+    ])
+
+    attendeesToInsert.push({ attendeeData, checkInData })
   }
 
-  const checkInData: CheckInData | undefined = faker.helpers.arrayElement([
-    undefined,
-    {
-      createdAt: faker.date.recent({ days: 7 }),
-    },
-  ])
-
-  attendeesToInsert.push({ attendeeData, checkInData })
+  return attendeesToInsert
 }
 
 async function seed() {
-  await db
-    .insert(events)
+  // Create all events
+  await deleteTable()
+
+  for (const eventData of eventsToCreate) {
+    const { id, title, details, slug, maximumAttendees } = eventData
+    await db
+      .insert(events)
+      .values({ id, title, details, slug, maximumAttendees })
+      .returning()
+  }
+
+  // Create both managers
+  const [{ id: managerId1 }] = await db
+    .insert(managers)
     .values({
-      id: eventId,
-      title: 'Unite Summit',
-      details: 'Um evento para apaixonados por códigos',
-      slug: 'unite-sumiit',
-      maximumAttendees: 120,
+      id: 'h3nxgmngrr6cfh7dgnqehimd',
+      name: 'Erick Souza Vasconcelos',
+      email: 'ericksvasc@gmail.com',
+      phone: '31991401719',
+      role: 'manager',
     })
     .returning()
 
-  for (const { attendeeData, checkInData } of attendeesToInsert) {
-    // Insere o participante
-    await db.insert(attendees).values(attendeeData)
+  const [{ id: managerId2 }] = await db
+    .insert(managers)
+    .values({
+      id: 'hcj2f261eaibiodnrpcs9c11',
+      name: 'Maria Eduarda',
+      email: 'maria@gmail.com',
+      phone: '31994078909',
+      role: 'manager',
+    })
+    .returning()
 
-    // Se existir check-in, insere o check-in relacionado
-    if (checkInData) {
-      await db.insert(checkIns).values({
-        ...checkInData,
-        attendeeId: attendeeData.id, // Relaciona o check-in com o participante
-      })
+  // Associate events with their respective managers
+  for (const eventData of eventsToCreate) {
+    const managerId = eventData.managerId === 1 ? managerId1 : managerId2
+    await db.insert(eventManagers).values({
+      eventId: eventData.id,
+      managerId,
+    })
+  }
+
+  // Generate and insert attendees for each event in batch
+  let startId = 10000
+  for (const eventData of eventsToCreate) {
+    const eventAttendees = generateAttendeesForEvent(
+      eventData.id,
+      startId,
+      eventData.targetAttendees
+    )
+
+    // Extract attendee data and check-in data for batch insertion
+    const attendeeDataArray = eventAttendees.map(
+      ({ attendeeData }) => attendeeData
+    )
+    await db.insert(attendees).values(attendeeDataArray)
+
+    const checkInDataArray = eventAttendees
+      .filter(({ checkInData }) => checkInData !== undefined)
+      .map(({ checkInData, attendeeData }) => ({
+        ...checkInData!,
+        attendeeId: attendeeData.id,
+        eventId: attendeeData.eventId,
+      }))
+
+    if (checkInDataArray.length > 0) {
+      await db.insert(checkIns).values(checkInDataArray)
     }
+
+    startId += eventData.targetAttendees
   }
 }
 
 seed().then(() => {
   console.log('Database seeded!')
-  client.end() // Encerra a conexão
+  client.end()
 })

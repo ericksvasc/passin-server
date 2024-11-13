@@ -1,6 +1,6 @@
 {
-  "id": "eb33eaa2-421f-446e-a425-3c8e4369180f",
-  "prevId": "0027d890-7acf-4a33-8bf6-d0d2be15038f",
+  "id": "18eb9c4c-cc69-4e9e-9e5d-26d35be2a8a9",
+  "prevId": "4792170f-3f47-4e21-81f9-404badfa8809",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -87,7 +87,10 @@
           ]
         }
       },
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.auth_links": {
       "name": "auth_links",
@@ -105,8 +108,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "user_id": {
-          "name": "user_id",
+        "manager_id": {
+          "name": "manager_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -121,12 +124,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "auth_links_user_id_managers_id_fk": {
-          "name": "auth_links_user_id_managers_id_fk",
+        "auth_links_manager_id_managers_id_fk": {
+          "name": "auth_links_manager_id_managers_id_fk",
           "tableFrom": "auth_links",
           "tableTo": "managers",
           "columnsFrom": [
-            "user_id"
+            "manager_id"
           ],
           "columnsTo": [
             "id"
@@ -144,7 +147,10 @@
             "code"
           ]
         }
-      }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.check_ins": {
       "name": "check_ins",
@@ -211,14 +217,17 @@
             "attendee_Id"
           ]
         }
-      }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.event_managers": {
       "name": "event_managers",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
+        "event_id": {
+          "name": "event_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -232,12 +241,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "event_managers_id_events_id_fk": {
-          "name": "event_managers_id_events_id_fk",
+        "event_managers_event_id_events_id_fk": {
+          "name": "event_managers_event_id_events_id_fk",
           "tableFrom": "event_managers",
           "tableTo": "events",
           "columnsFrom": [
-            "id"
+            "event_id"
           ],
           "columnsTo": [
             "id"
@@ -260,15 +269,18 @@
         }
       },
       "compositePrimaryKeys": {
-        "event_managers_id_manager_id_pk": {
-          "name": "event_managers_id_manager_id_pk",
+        "event_managers_event_id_manager_id_pk": {
+          "name": "event_managers_event_id_manager_id_pk",
           "columns": [
-            "id",
+            "event_id",
             "manager_id"
           ]
         }
       },
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.events": {
       "name": "events",
@@ -323,7 +335,10 @@
             "slug"
           ]
         }
-      }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.managers": {
       "name": "managers",
@@ -387,7 +402,10 @@
             "email"
           ]
         }
-      }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     }
   },
   "enums": {
@@ -402,6 +420,9 @@
   },
   "schemas": {},
   "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},

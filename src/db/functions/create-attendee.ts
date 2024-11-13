@@ -1,19 +1,39 @@
-import { and, count, eq } from 'drizzle-orm'
+import { and, count, desc, eq } from 'drizzle-orm'
 import { db } from '..'
-import { attendees, events } from '../schema'
-import { BadRequest } from '../../http/routes/_errors/bad.request'
+import { attendees, eventManagers, events } from '../schema'
+import {
+  BadRequest,
+  UnauthorizedError,
+} from '../../http/routes/_errors/bad.request'
 
 interface CreateAttendees {
   name: string
   email: string
-  eventId: string
+  slug: string
+  managerId: string
 }
 
 export async function createAttendee({
   name,
   email,
-  eventId,
+  slug,
+  managerId,
 }: CreateAttendees) {
+  const event = await db
+    .select({
+      eventId: events.id,
+    })
+    .from(events)
+    .innerJoin(eventManagers, eq(eventManagers.eventId, events.id))
+    .where(and(eq(events.slug, slug), eq(eventManagers.managerId, managerId)))
+    .limit(1)
+
+  if (event.length === 0) {
+    throw new UnauthorizedError()
+  }
+
+  const [{ eventId }] = event
+
   const attendeeFromEmail = await db
     .select({
       eventId: attendees.eventId,
@@ -49,12 +69,30 @@ export async function createAttendee({
     )
   }
 
+  const lastId = await db
+    .select({
+      lastId: attendees.id,
+    })
+    .from(attendees)
+    .where(eq(attendees.eventId, eventId))
+    .orderBy(desc(attendees.id))
+    .limit(1)
+
+  let id: number
+
+  if (lastId.length === 0 || lastId[0].lastId === null) {
+    id = 10000
+  } else {
+    id = lastId[0].lastId + 1
+  }
+
   const result = await db
     .insert(attendees)
     .values({
       name,
       email,
       eventId,
+      id,
     })
     .returning()
 

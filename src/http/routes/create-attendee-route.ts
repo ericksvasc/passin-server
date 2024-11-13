@@ -1,10 +1,11 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import z from 'zod'
 import { createAttendee } from '../../db/functions/create-attendee'
+import { UnauthorizedError } from './_errors/bad.request'
 
 export const createAttendeeRoute: FastifyPluginAsyncZod = async app => {
   app.post(
-    '/events/:eventId/attendees',
+    '/events/:slug/attendees',
     {
       schema: {
         summary: 'Register an ateendee',
@@ -14,29 +15,45 @@ export const createAttendeeRoute: FastifyPluginAsyncZod = async app => {
           email: z.string().email(),
         }),
         params: z.object({
-          eventId: z.string().cuid2(),
+          slug: z.string(),
         }),
         response: {
           201: z.object({
             ateendeeId: z.number().min(1),
             name: z.string(),
+            email: z.string().email(),
+            createdAt: z.date(),
+            eventId: z.string().cuid2(),
           }),
         },
       },
     },
     async (request, reply) => {
       const { name, email } = request.body
-      const { eventId } = request.params
+      const { slug } = request.params
+
+      const { managerId } = await app.getCurrentUser(request)
+
+      if (!managerId) {
+        throw new UnauthorizedError()
+      }
 
       const result = await createAttendee({
         name,
         email,
-        eventId,
+        slug,
+        managerId,
       })
 
       return reply
         .status(201)
-        .send({ name: result.attendee.name, ateendeeId: result.attendee.id })
+        .send({
+          name: result.attendee.name,
+          ateendeeId: result.attendee.id,
+          email: result.attendee.email,
+          eventId: result.attendee.eventId,
+          createdAt: result.attendee.createdAt,
+        })
     }
   )
 }

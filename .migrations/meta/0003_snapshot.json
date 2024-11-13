@@ -1,6 +1,6 @@
 {
-  "id": "eb33eaa2-421f-446e-a425-3c8e4369180f",
-  "prevId": "0027d890-7acf-4a33-8bf6-d0d2be15038f",
+  "id": "a208abde-7dbf-4e66-b0c6-e0a144be0085",
+  "prevId": "f1d2f654-f6f6-4cae-94f4-ef9997735a45",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -87,7 +87,10 @@
           ]
         }
       },
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.auth_links": {
       "name": "auth_links",
@@ -105,8 +108,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "user_id": {
-          "name": "user_id",
+        "manager_id": {
+          "name": "manager_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -121,17 +124,17 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "auth_links_user_id_managers_id_fk": {
-          "name": "auth_links_user_id_managers_id_fk",
+        "auth_links_manager_id_managers_id_fk": {
+          "name": "auth_links_manager_id_managers_id_fk",
           "tableFrom": "auth_links",
           "tableTo": "managers",
           "columnsFrom": [
-            "user_id"
+            "manager_id"
           ],
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
+          "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
@@ -144,7 +147,10 @@
             "code"
           ]
         }
-      }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.check_ins": {
       "name": "check_ins",
@@ -211,7 +217,10 @@
             "attendee_Id"
           ]
         }
-      }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.event_managers": {
       "name": "event_managers",
@@ -268,7 +277,10 @@
           ]
         }
       },
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.events": {
       "name": "events",
@@ -323,7 +335,10 @@
             "slug"
           ]
         }
-      }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.managers": {
       "name": "managers",
@@ -387,7 +402,10 @@
             "email"
           ]
         }
-      }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     }
   },
   "enums": {
@@ -402,6 +420,9 @@
   },
   "schemas": {},
   "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},
