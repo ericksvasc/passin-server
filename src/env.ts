@@ -1,5 +1,9 @@
 import z from 'zod'
 
+import dotenv from 'dotenv'
+
+dotenv.config()
+
 const envSchema = z.object({
   DATABASE_URL: z.string().url().min(1),
   API_BASE_URL: z.string().url().min(1),
