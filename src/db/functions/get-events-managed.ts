@@ -8,6 +8,7 @@ interface GetEventsManaged {
 }
 
 export async function getEventsManaged({ managerId }: GetEventsManaged) {
+  // const managerId = 'hcj2f261eaibiodnrpcs9c11'
   const eventsIdFromManager = await db
     .select({
       eventId: eventManagers.eventId,
