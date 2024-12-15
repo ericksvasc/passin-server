@@ -31,79 +31,71 @@ interface CheckInData {
   createdAt: Date
 }
 
-// Array of event IDs and their details with specific attendee counts
+// Array of event details with specific attendee counts
 const eventsToCreate = [
   {
-    id: 'hr0e68xev2zkbuh71mai0szz',
     title: 'Unite Summit',
     details: 'Um evento para apaixonados por códigos',
     slug: 'unite-summit',
     maximumAttendees: 250,
-    targetAttendees: 180,
-    managerId: 1, // Added managerId reference
+    targetAttendees: 100,
+    managerId: 1,
   },
   {
-    id: 'j8u7tfdgak2h6fhnqjh9pgfo',
     title: 'Tech Conference 2024',
     details: 'Conferência anual de tecnologia e inovação',
     slug: 'tech-conference-2024',
     maximumAttendees: 200,
-    targetAttendees: 198,
+    targetAttendees: 102,
     managerId: 1,
   },
   {
-    id: 'rddl969wbsvfsyhxtv7jfn34',
     title: 'Developer Day',
     details: 'Um dia inteiro dedicado ao desenvolvimento de software',
     slug: 'developer-day',
     maximumAttendees: 250,
-    targetAttendees: 210,
+    targetAttendees: 120,
     managerId: 1,
   },
   {
-    id: 'b0j0959p3hwsmvq1kazusdhq',
     title: 'Code Workshop',
     details: 'Workshop prático de programação',
     slug: 'code-workshop',
     maximumAttendees: 50,
-    targetAttendees: 50,
+    targetAttendees: 25,
     managerId: 1,
   },
   {
-    id: 'e78gejgtarz1ob2n09ok688j',
     title: 'Innovation Summit',
     details: 'Summit focado em inovação tecnológica',
     slug: 'innovation-summit',
     maximumAttendees: 25,
-    targetAttendees: 20,
+    targetAttendees: 15,
     managerId: 1,
   },
   // New events for the second manager
   {
-    id: 'k9p2m5nx8wq7vt4y1zl3',
     title: 'Data Science Conference',
     details: 'Conferência especializada em Data Science e IA',
     slug: 'data-science-conference',
     maximumAttendees: 250,
-    targetAttendees: 200,
+    targetAttendees: 105,
     managerId: 2,
   },
   {
-    id: 'h4j7r9d2m5n8q1w3x6',
     title: 'Cloud Computing Workshop',
     details: 'Workshop sobre arquitetura e deploy em nuvem',
     slug: 'cloud-computing-workshop',
     maximumAttendees: 175,
-    targetAttendees: 150,
+    targetAttendees: 102,
     managerId: 2,
   },
   {
-    id: 'b2k5n8p1m4w7x3z6y9',
     title: 'Mobile Dev Meetup',
     details: 'Encontro para desenvolvedores mobile',
     slug: 'mobile-dev-meetup',
     maximumAttendees: 40,
-    targetAttendees: 35,
+    targetAttendees: 18,
     managerId: 2,
   },
 ]
@@ -146,16 +138,8 @@ function generateAttendeesForEvent(
 }
 
 async function seed() {
-  // Create all events
+  // Clear existing data
   await deleteTable()
-
-  for (const eventData of eventsToCreate) {
-    const { id, title, details, slug, maximumAttendees } = eventData
-    await db
-      .insert(events)
-      .values({ id, title, details, slug, maximumAttendees })
-      .returning()
-  }
 
   // Create both managers
   const [{ id: managerId1 }] = await db
@@ -173,37 +157,42 @@ async function seed() {
     .insert(managers)
     .values({
       id: 'hcj2f261eaibiodnrpcs9c11',
-      name: 'Maria Eduarda',
+      name: 'Maria Eduarda Moreira Lima',
       email: 'maria@gmail.com',
       phone: '31994078909',
       role: 'manager',
     })
     .returning()
 
-  // Associate events with their respective managers
-  for (const eventData of eventsToCreate) {
-    const managerId = eventData.managerId === 1 ? managerId1 : managerId2
-    await db.insert(eventManagers).values({
-      eventId: eventData.id,
-      managerId,
-    })
-  }
-
-  // Generate and insert attendees for each event in batch
+  // Create events and associate them with their respective managers
   let startId = 10000
   for (const eventData of eventsToCreate) {
+    const { title, details, slug, maximumAttendees, managerId } = eventData
+    const [{ id: eventId }] = await db
+      .insert(events)
+      .values({ title, details, slug, maximumAttendees })
+      .returning()
+
+    const manager = managerId === 1 ? managerId1 : managerId2
+    await db.insert(eventManagers).values({
+      eventId,
+      managerId: manager,
+    })
+
+    // Generate and insert attendees for each event in batch
     const eventAttendees = generateAttendeesForEvent(
-      eventData.id,
+      eventId,
       startId,
       eventData.targetAttendees
     )
 
-    // Extract attendee data and check-in data for batch insertion
+    // Insert attendee data
     const attendeeDataArray = eventAttendees.map(
       ({ attendeeData }) => attendeeData
     )
     await db.insert(attendees).values(attendeeDataArray)
 
+    // Insert check-in data
     const checkInDataArray = eventAttendees
       .filter(({ checkInData }) => checkInData !== undefined)
       .map(({ checkInData, attendeeData }) => ({

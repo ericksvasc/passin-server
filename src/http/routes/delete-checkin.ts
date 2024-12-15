@@ -3,23 +3,26 @@ import z from 'zod'
 import { deleteCheckinAttendee } from '../../db/functions/delete-checkin'
 
 export const deleteCheckinRoute: FastifyPluginAsyncZod = async app => {
-  app.delete(
-    '/attendees/:slug/:attendeeId/check-in',
+  app.post(
+    '/attendees/:slug/check-in/delete',
     {
       schema: {
         params: z.object({
-          attendeeId: z.coerce.number().int(),
           slug: z.string(),
+        }),
+        body: z.object({
+          attendeeIds: z.array(z.number().min(1).int()),
         }),
       },
     },
     async (request, reply) => {
-      const { attendeeId, slug } = request.params
+      const { slug } = request.params
+      const { attendeeIds } = request.body
 
       const { managerId } = await app.getCurrentUser(request)
 
       await deleteCheckinAttendee({
-        attendeeId,
+        attendeeIds,
         managerId,
         slug,
       })

@@ -38,6 +38,16 @@ export const managers = pgTable('managers', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })
 
+export const events = pgTable('events', {
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  title: text('title').notNull(),
+  details: text('details'),
+  slug: text('slug').notNull().unique(),
+  maximumAttendees: integer('maximum_attendees'),
+})
+
 export const eventManagers = pgTable(
   'event_managers',
   {
@@ -59,17 +69,6 @@ export const eventManagers = pgTable(
   })
 )
 
-export const events = pgTable('events', {
-  id: text('id')
-    .primaryKey()
-    .$defaultFn(() => createId())
-    .unique(),
-  title: text('title').notNull(),
-  details: text('details'),
-  slug: text('slug').notNull().unique(),
-  maximumAttendees: integer('maximum_attendees'),
-})
-
 export const attendees = pgTable(
   'attendees',
   {
@@ -81,20 +80,20 @@ export const attendees = pgTable(
       .notNull()
       .defaultNow(),
   },
-  attendees => ({
-    pk: primaryKey({ columns: [attendees.eventId, attendees.id] }),
-    eventFk: foreignKey({
+  attendees => [
+    primaryKey({ columns: [attendees.eventId, attendees.id] }),
+    foreignKey({
       name: 'attendees_event_id_fkey',
       columns: [attendees.eventId],
       foreignColumns: [events.id],
     })
       .onDelete('restrict')
       .onUpdate('cascade'),
-    uniqueEventEmail: uniqueIndex('attendees_event_id_email_key').on(
+    uniqueIndex('attendees_event_id_email_key').on(
       attendees.eventId,
       attendees.email
     ),
-  })
+  ]
 )
 
 export const checkIns = pgTable(
@@ -104,17 +103,17 @@ export const checkIns = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),
-    attendeeId: integer('attendee_Id').unique().notNull(),
+    attendeeId: integer('attendee_Id').notNull(),
     eventId: text('event_id').notNull(),
   },
-  checkIns => ({
-    pk: primaryKey({ columns: [checkIns.eventId, checkIns.attendeeId] }),
-    eventFk: foreignKey({
+  checkIns => [
+    primaryKey({ columns: [checkIns.eventId, checkIns.attendeeId] }), // Atualização do primaryKey para o formato de objeto
+    foreignKey({
+      columns: [checkIns.attendeeId, checkIns.eventId], // Atualização do foreignKey para o formato de objeto
+      foreignColumns: [attendees.id, attendees.eventId],
       name: 'check_ins_attendeeId_fkey',
-      columns: [checkIns.eventId, checkIns.attendeeId],
-      foreignColumns: [attendees.eventId, attendees.id],
     })
       .onDelete('restrict')
       .onUpdate('cascade'),
-  })
+  ]
 )

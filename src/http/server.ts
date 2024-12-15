@@ -23,6 +23,8 @@ import { sendAuthLink } from './routes/auth/send-auth-link'
 import { authenticateFromLink } from './routes/auth/authenticate-from-link'
 import { auth } from './auth'
 import { getEventsFromManaged } from './routes/get-events-from-manages'
+import { getMeRoute } from './routes/get-me-route'
+import { checkSlugRoute } from './routes/check-slug-route'
 
 const app = fastify().withTypeProvider<ZodTypeProvider>()
 // app.register(fastifySwagger, {
@@ -64,6 +66,8 @@ app.register(deleteCheckinRoute)
 app.register(sendAuthLink)
 app.register(authenticateFromLink)
 app.register(getEventsFromManaged)
+app.register(getMeRoute)
+app.register(checkSlugRoute)
 
 app
   .listen({

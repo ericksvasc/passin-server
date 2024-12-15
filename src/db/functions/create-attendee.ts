@@ -28,6 +28,8 @@ export async function createAttendee({
     .where(and(eq(events.slug, slug), eq(eventManagers.managerId, managerId)))
     .limit(1)
 
+  console.log(event)
+
   if (event.length === 0) {
     throw new UnauthorizedError()
   }
@@ -41,6 +43,8 @@ export async function createAttendee({
     .from(attendees)
     .where(and(eq(attendees.email, email), eq(attendees.eventId, eventId)))
     .limit(1)
+
+  console.log(attendeeFromEmail)
 
   const attendeesForThisEvent = await db
     .select({
@@ -95,6 +99,8 @@ export async function createAttendee({
       id,
     })
     .returning()
+
+  console.log(result)
 
   const attendee = result[0]
   // const attendee = attendeesForThisEvent

@@ -16,21 +16,27 @@ export const createEventRoute: FastifyPluginAsyncZod = async app => {
         }),
         response: {
           201: z.object({
-            eventId: z.string().cuid2(),
+            title: z.string(),
+            details: z.string().nullish(),
+            maximumAttendees: z.number().nullable(),
+            id: z.string().cuid2(),
+            slug: z.string(),
           }),
         },
       },
     },
     async (request, reply) => {
       const { title, details, maximumAttendees } = request.body
+      const { managerId } = await app.getCurrentUser(request)
 
       const result = await createEvent({
         title,
         details,
         maximumAttendees,
+        managerId,
       })
 
-      return reply.status(201).send({ eventId: result.event.id })
+      return reply.status(201).send(result.event)
     }
   )
 }

@@ -1,34 +1,17 @@
 version: '3.8'
+
 services:
-
-  app:
-    build: .
+  postgres:
+    image: postgres:latest
+    container_name: passin-postgres
     environment:
-      DATABASE_URL: ${DATABASE_URL}
+      POSTGRES_USER: passin
+      POSTGRES_PASSWORD: passin
+      POSTGRES_DB: passin
     ports:
-      - "5273:5273"
-    env_file:
-      - .env
-    networks:
-      - serverapi
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.apiserver.rule=Host(`apiserver.ericksvasc.com`) ## Url do Dify
-      - traefik.http.routers.apiserver.entrypoints=websecure
-      - traefik.http.routers.apiserver.tls.certresolver=leresolver
-      - traefik.http.services.apiserver.loadbalancer.server.port=5273
-      # - traefik.http.services.apiserver.loadbalancer.passHostHeader=true
-      - traefik.http.routers.apiserver.service=apiserver
-    # volumes:
-    #   - /data/server_api:/app
-    # command: >
-    #   sh -c "
-    #   npm run db:generate &&
-    #   npm run db:migrate &&
-    #   npm run seed
-    #   "
+      - "5433:5432"
+    volumes:
+      - postgres_data55sss5:/var/lib/postgresql/data
 
-networks:
-  serverapi:
-    external: true
-
+volumes:
+  postgres_data55sss5:

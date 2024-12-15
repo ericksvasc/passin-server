@@ -1,5 +1,5 @@
 {
-  "id": "0027d890-7acf-4a33-8bf6-d0d2be15038f",
+  "id": "2cc1980f-da19-4275-a6af-766641e5593f",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -87,7 +87,70 @@
           ]
         }
       },
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.auth_links": {
+      "name": "auth_links",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "code": {
+          "name": "code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "manager_id": {
+          "name": "manager_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "auth_links_manager_id_managers_id_fk": {
+          "name": "auth_links_manager_id_managers_id_fk",
+          "tableFrom": "auth_links",
+          "tableTo": "managers",
+          "columnsFrom": [
+            "manager_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "auth_links_code_unique": {
+          "name": "auth_links_code_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "code"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.check_ins": {
       "name": "check_ins",
@@ -126,12 +189,12 @@
           "tableFrom": "check_ins",
           "tableTo": "attendees",
           "columnsFrom": [
-            "event_id",
-            "attendee_Id"
+            "attendee_Id",
+            "event_id"
           ],
           "columnsTo": [
-            "event_id",
-            "id"
+            "id",
+            "event_id"
           ],
           "onDelete": "restrict",
           "onUpdate": "cascade"
@@ -146,22 +209,17 @@
           ]
         }
       },
-      "uniqueConstraints": {
-        "check_ins_attendee_Id_unique": {
-          "name": "check_ins_attendee_Id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "attendee_Id"
-          ]
-        }
-      }
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.event_managers": {
       "name": "event_managers",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
+        "event_id": {
+          "name": "event_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -175,12 +233,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "event_managers_id_events_id_fk": {
-          "name": "event_managers_id_events_id_fk",
+        "event_managers_event_id_events_id_fk": {
+          "name": "event_managers_event_id_events_id_fk",
           "tableFrom": "event_managers",
           "tableTo": "events",
           "columnsFrom": [
-            "id"
+            "event_id"
           ],
           "columnsTo": [
             "id"
@@ -188,10 +246,10 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "event_managers_manager_id_users_id_fk": {
-          "name": "event_managers_manager_id_users_id_fk",
+        "event_managers_manager_id_managers_id_fk": {
+          "name": "event_managers_manager_id_managers_id_fk",
           "tableFrom": "event_managers",
-          "tableTo": "users",
+          "tableTo": "managers",
           "columnsFrom": [
             "manager_id"
           ],
@@ -203,15 +261,18 @@
         }
       },
       "compositePrimaryKeys": {
-        "event_managers_id_manager_id_pk": {
-          "name": "event_managers_id_manager_id_pk",
+        "event_managers_event_id_manager_id_pk": {
+          "name": "event_managers_event_id_manager_id_pk",
           "columns": [
-            "id",
+            "event_id",
             "manager_id"
           ]
         }
       },
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.events": {
       "name": "events",
@@ -252,13 +313,6 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "events_id_unique": {
-          "name": "events_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "id"
-          ]
-        },
         "events_slug_unique": {
           "name": "events_slug_unique",
           "nullsNotDistinct": false,
@@ -266,10 +320,13 @@
             "slug"
           ]
         }
-      }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "public.users": {
-      "name": "users",
+    "public.managers": {
+      "name": "managers",
       "schema": "",
       "columns": {
         "id": {
@@ -323,14 +380,17 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "users_email_unique": {
-          "name": "users_email_unique",
+        "managers_email_unique": {
+          "name": "managers_email_unique",
           "nullsNotDistinct": false,
           "columns": [
             "email"
           ]
         }
-      }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     }
   },
   "enums": {
@@ -345,6 +405,9 @@
   },
   "schemas": {},
   "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},

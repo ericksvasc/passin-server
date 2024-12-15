@@ -5,43 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1730833553616,
-      "tag": "0000_mighty_microbe",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1730835769304,
-      "tag": "0001_neat_doctor_strange",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1730838859520,
-      "tag": "0002_faithful_masked_marvel",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1731453909312,
-      "tag": "0003_curious_madame_hydra",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1731453925474,
-      "tag": "0004_noisy_nighthawk",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1731453952507,
-      "tag": "0005_furry_spot",
+      "when": 1731635695246,
+      "tag": "0000_ancient_blockbuster",
       "breakpoints": true
     }
   ]

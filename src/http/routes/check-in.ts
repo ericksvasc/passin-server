@@ -4,15 +4,17 @@ import { createCheckIn } from '../../db/functions/check-in'
 import { UnauthorizedError } from './_errors/bad.request'
 
 export const checkInRoute: FastifyPluginAsyncZod = async app => {
-  app.get(
-    '/attendees/:slug/:attendeeId/check-in',
+  app.post(
+    '/attendees/:slug/check-in',
     {
       schema: {
         summary: 'Check-in an ateendeee',
         tags: ['Check-ins'],
         params: z.object({
-          attendeeId: z.coerce.number().min(1).int(),
           slug: z.string(),
+        }),
+        body: z.object({
+          attendeeIds: z.array(z.number().min(1).int()),
         }),
         response: {
           201: z.null(),
@@ -20,7 +22,8 @@ export const checkInRoute: FastifyPluginAsyncZod = async app => {
       },
     },
     async (request, reply) => {
-      const { attendeeId, slug } = request.params
+      const { slug } = request.params
+      const { attendeeIds } = request.body
 
       const { managerId } = await app.getCurrentUser(request)
 
@@ -29,7 +32,7 @@ export const checkInRoute: FastifyPluginAsyncZod = async app => {
       }
 
       await createCheckIn({
-        attendeeId,
+        attendeeIds,
         slug,
         managerId,
       })

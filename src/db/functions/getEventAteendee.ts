@@ -61,7 +61,13 @@ export async function getEventAteendee({
         )
       )
     )
-    .leftJoin(checkIns, eq(attendees.id, checkIns.attendeeId))
+    .leftJoin(
+      checkIns,
+      and(
+        eq(attendees.id, checkIns.attendeeId),
+        eq(attendees.eventId, checkIns.eventId)
+      )
+    )
     .innerJoin(eventManagers, eq(attendees.eventId, eventManagers.eventId))
     .orderBy(desc(attendees.createdAt))
     .limit(10)

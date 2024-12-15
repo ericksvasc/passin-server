@@ -1,17 +1,16 @@
-import { and, eq } from 'drizzle-orm'
+import { and, eq, inArray } from 'drizzle-orm'
 import { db } from '..'
 import { checkIns, eventManagers, events } from '../schema'
 import { UnauthorizedError } from '../../http/routes/_errors/bad.request'
 
 interface DeleteCheckin {
-  attendeeId: number
-
+  attendeeIds: number[]
   slug: string
   managerId: string
 }
 
 export async function deleteCheckinAttendee({
-  attendeeId,
+  attendeeIds,
   slug,
   managerId,
 }: DeleteCheckin) {
@@ -33,7 +32,10 @@ export async function deleteCheckinAttendee({
   await db
     .delete(checkIns)
     .where(
-      and(eq(checkIns.eventId, eventId), eq(checkIns.attendeeId, attendeeId))
+      and(
+        eq(checkIns.eventId, eventId),
+        inArray(checkIns.attendeeId, attendeeIds)
+      )
     )
     .returning()
 }

@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm'
+import { and, arrayContains, eq, inArray } from 'drizzle-orm'
 import { db } from '..'
 import { checkIns, eventManagers, events } from '../schema'
 import {
@@ -7,13 +7,13 @@ import {
 } from '../../http/routes/_errors/bad.request'
 
 interface CreateCeckin {
-  attendeeId: number
+  attendeeIds: number[]
   slug: string
   managerId: string
 }
 
 export async function createCheckIn({
-  attendeeId,
+  attendeeIds,
   slug,
   managerId,
 }: CreateCeckin) {
@@ -35,7 +35,12 @@ export async function createCheckIn({
   const attendeeCheckin = await db
     .select()
     .from(checkIns)
-    .where(eq(checkIns.attendeeId, attendeeId))
+    .where(
+      and(
+        inArray(checkIns.attendeeId, attendeeIds),
+        eq(checkIns.eventId, eventId)
+      )
+    )
     .limit(1)
 
   if (attendeeCheckin.length >= 1) {
@@ -44,10 +49,12 @@ export async function createCheckIn({
 
   const createCheckInAteendee = await db
     .insert(checkIns)
-    .values({
-      attendeeId,
-      eventId,
-    })
+    .values(
+      attendeeIds.map(id => ({
+        attendeeId: id,
+        eventId,
+      }))
+    )
     .returning()
 
   const checkIn = createCheckInAteendee[0]

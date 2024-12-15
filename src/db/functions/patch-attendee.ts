@@ -30,11 +30,11 @@ export async function patchAttendee({
     .where(and(eq(events.slug, slug), eq(eventManagers.managerId, managerId)))
     .limit(1)
 
-  const [{ eventId }] = event
-
   if (event.length === 0) {
     throw new UnauthorizedError()
   }
+
+  const [{ eventId }] = event
 
   const updateData: Partial<{ name: string; email: string }> = {}
 

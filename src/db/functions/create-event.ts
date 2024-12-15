@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm'
 import { db } from '..'
-import { attendees, events } from '../schema'
+import { attendees, eventManagers, events } from '../schema'
 import { generateSlug } from './create-slug'
 import { BadRequest } from '../../http/routes/_errors/bad.request'
 
@@ -8,15 +8,17 @@ interface CreateEvent {
   title: string
   details?: string
   maximumAttendees?: number
+  managerId: string
 }
 
 export async function createEvent({
   title,
   details,
   maximumAttendees,
+  managerId,
 }: CreateEvent) {
-  const initialSlug = generateSlug(title)
-  const slug = initialSlug
+  const slug = generateSlug(title)
+  // const slug = initialSlug
 
   const slugExists = await db
     .select()
@@ -28,7 +30,7 @@ export async function createEvent({
     throw new BadRequest('Slug with this name already exists!')
   }
 
-  const result = await db
+  const [result] = await db
     .insert(events)
     .values({
       title,
@@ -38,7 +40,12 @@ export async function createEvent({
     })
     .returning()
 
-  const event = result[0]
+  await db.insert(eventManagers).values({
+    eventId: result.id,
+    managerId,
+  })
+
+  const event = result
 
   return {
     event,
